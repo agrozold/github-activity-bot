@@ -2,26 +2,28 @@
 pragma solidity ^0.8.0;
 
 // Автоматически сгенерированный контракт: SocialFi_8645
-// Дата создания: 2025-12-01 04:41:44
+// Дата создания: 2025-12-04 12:25:17
 
-contract SocialProfile {
-    struct Profile {
-        string username;
-        string bio;
-        uint256 reputation;
-        bool verified;
+contract SocialToken {
+    mapping(address => uint256) public balances;
+    mapping(address => uint256) public lastReward;
+    
+    string public name = "Social Reward Token";
+    string public symbol = "SRT";
+    uint256 public totalSupply = 1000000;
+    
+    event RewardClaimed(address indexed user, uint256 amount);
+    
+    function claimDailyReward() public {
+        require(block.timestamp >= lastReward[msg.sender] + 24 hours, "Already claimed");
+        
+        lastReward[msg.sender] = block.timestamp;
+        balances[msg.sender] += 10;
+        
+        emit RewardClaimed(msg.sender, 10);
     }
     
-    mapping(address => Profile) public profiles;
-    
-    event ProfileCreated(address indexed user, string username);
-    
-    function createProfile(string memory _username, string memory _bio) public {
-        profiles[msg.sender] = Profile(_username, _bio, 100, false);
-        emit ProfileCreated(msg.sender, _username);
-    }
-    
-    function getProfile(address user) public view returns (Profile memory) {
-        return profiles[user];
+    function getBalance(address user) public view returns (uint256) {
+        return balances[user];
     }
 }

@@ -2,33 +2,48 @@
 pragma solidity ^0.8.0;
 
 // Автоматически сгенерированный контракт: DeFi_6975
-// Дата создания: 2026-01-21 04:36:35
+// Дата создания: 2026-02-03 20:25:30
 
-contract SimpleDEX {
-    mapping(address => uint256) public ethBalance;
-    mapping(address => uint256) public tokenBalance;
+contract StakingPool {
+    mapping(address => uint256) public stakedAmount;
+    mapping(address => uint256) public stakeTime;
+    mapping(address => uint256) public rewards;
     
-    uint256 public ethReserve;
-    uint256 public tokenReserve;
+    uint256 public totalStaked;
+    uint256 public rewardRate = 10; // 10% годовых
     
-    event LiquidityAdded(address indexed provider, uint256 ethAmount, uint256 tokenAmount);
-    event TokensSwapped(address indexed user, uint256 ethIn, uint256 tokensOut);
+    event Staked(address indexed user, uint256 amount);
+    event Withdrawn(address indexed user, uint256 amount, uint256 reward);
     
-    function addLiquidity(uint256 tokenAmount) public payable {
-        ethReserve += msg.value;
-        tokenReserve += tokenAmount;
+    function stake() public payable {
+        require(msg.value > 0, "Must stake something");
         
-        ethBalance[msg.sender] += msg.value;
-        tokenBalance[msg.sender] += tokenAmount;
+        stakedAmount[msg.sender] += msg.value;
+        stakeTime[msg.sender] = block.timestamp;
+        totalStaked += msg.value;
         
-        emit LiquidityAdded(msg.sender, msg.value, tokenAmount);
+        emit Staked(msg.sender, msg.value);
     }
     
-    function swapEthForTokens() public payable {
-        uint256 tokensOut = (msg.value * tokenReserve) / ethReserve;
-        ethReserve += msg.value;
-        tokenReserve -= tokensOut;
+    function calculateReward(address user) public view returns (uint256) {
+        if (stakedAmount[user] == 0) return 0;
         
-        emit TokensSwapped(msg.sender, msg.value, tokensOut);
+        uint256 timeStaked = block.timestamp - stakeTime[user];
+        uint256 reward = (stakedAmount[user] * rewardRate * timeStaked) / (365 days * 100);
+        
+        return reward;
+    }
+    
+    function withdraw() public {
+        uint256 amount = stakedAmount[msg.sender];
+        uint256 reward = calculateReward(msg.sender);
+        
+        require(amount > 0, "Nothing to withdraw");
+        
+        stakedAmount[msg.sender] = 0;
+        totalStaked -= amount;
+        
+        payable(msg.sender).transfer(amount + reward);
+        emit Withdrawn(msg.sender, amount, reward);
     }
 }

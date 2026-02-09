@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Автоматически сгенерированный контракт: DeFi_3265
-// Дата создания: 2025-12-11 12:26:05
+// Дата создания: 2026-02-09 20:30:17
 
 contract SimpleDEX {
     mapping(address => uint256) public ethBalance;

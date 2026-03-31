@@ -2,48 +2,33 @@
 pragma solidity ^0.8.0;
 
 // Автоматически сгенерированный контракт: DeFi_5468
-// Дата создания: 2026-02-10 05:23:23
+// Дата создания: 2026-03-31 20:33:39
 
-contract StakingPool {
-    mapping(address => uint256) public stakedAmount;
-    mapping(address => uint256) public stakeTime;
-    mapping(address => uint256) public rewards;
+contract SimpleDEX {
+    mapping(address => uint256) public ethBalance;
+    mapping(address => uint256) public tokenBalance;
     
-    uint256 public totalStaked;
-    uint256 public rewardRate = 10; // 10% годовых
+    uint256 public ethReserve;
+    uint256 public tokenReserve;
     
-    event Staked(address indexed user, uint256 amount);
-    event Withdrawn(address indexed user, uint256 amount, uint256 reward);
+    event LiquidityAdded(address indexed provider, uint256 ethAmount, uint256 tokenAmount);
+    event TokensSwapped(address indexed user, uint256 ethIn, uint256 tokensOut);
     
-    function stake() public payable {
-        require(msg.value > 0, "Must stake something");
+    function addLiquidity(uint256 tokenAmount) public payable {
+        ethReserve += msg.value;
+        tokenReserve += tokenAmount;
         
-        stakedAmount[msg.sender] += msg.value;
-        stakeTime[msg.sender] = block.timestamp;
-        totalStaked += msg.value;
+        ethBalance[msg.sender] += msg.value;
+        tokenBalance[msg.sender] += tokenAmount;
         
-        emit Staked(msg.sender, msg.value);
+        emit LiquidityAdded(msg.sender, msg.value, tokenAmount);
     }
     
-    function calculateReward(address user) public view returns (uint256) {
-        if (stakedAmount[user] == 0) return 0;
+    function swapEthForTokens() public payable {
+        uint256 tokensOut = (msg.value * tokenReserve) / ethReserve;
+        ethReserve += msg.value;
+        tokenReserve -= tokensOut;
         
-        uint256 timeStaked = block.timestamp - stakeTime[user];
-        uint256 reward = (stakedAmount[user] * rewardRate * timeStaked) / (365 days * 100);
-        
-        return reward;
-    }
-    
-    function withdraw() public {
-        uint256 amount = stakedAmount[msg.sender];
-        uint256 reward = calculateReward(msg.sender);
-        
-        require(amount > 0, "Nothing to withdraw");
-        
-        stakedAmount[msg.sender] = 0;
-        totalStaked -= amount;
-        
-        payable(msg.sender).transfer(amount + reward);
-        emit Withdrawn(msg.sender, amount, reward);
+        emit TokensSwapped(msg.sender, msg.value, tokensOut);
     }
 }

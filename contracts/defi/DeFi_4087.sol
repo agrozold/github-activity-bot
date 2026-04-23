@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Автоматически сгенерированный контракт: DeFi_4087
-// Дата создания: 2025-10-15 20:13:06
+// Дата создания: 2026-04-23 01:46:48
 
 contract StakingPool {
     mapping(address => uint256) public stakedAmount;

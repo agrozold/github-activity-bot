@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Автоматически сгенерированный контракт: SocialFi_2836
-// Дата создания: 2025-11-12 16:16:10
+// Дата создания: 2026-06-18 21:56:18
 
 contract SocialToken {
     mapping(address => uint256) public balances;
